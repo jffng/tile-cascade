@@ -1,0 +1,93 @@
+<html>
+  <head>
+    <style>
+      body {
+        background: black;
+      }
+      .grid-sizer,
+      .grid-item { 
+        width: 10%; 
+        margin: .25%; 
+        opacity: 0;
+        transition: opacity .25s ease-in-out;
+        -moz-transition: opacity .25s ease-in-out;
+        -webkit-transition: opacity .25s ease-in-out;
+      }
+      .fadein {
+        opacity: 1
+      }
+      .grid-item--width2 { width: 20%; margin-right: 0 }
+      .grid-item--width3 { width: 5%;  }
+      img { 
+        width: 100%;
+        position: relative;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container" class='grid'>
+      <div class='grid-sizer'></div>
+    </div>
+    <script src="lib/axios.min.js"></script>
+    <script src="lib/jquery.min.js"></script>
+    <script src="lib/masonry.min.js"></script>
+    <script type="text/javascript">
+      function shuffle(array) {
+          var currentIndex = array.length, temporaryValue, randomIndex;
+
+          // While there remain elements to shuffle...
+        while (0 !== currentIndex) {
+
+              // Pick a remaining element...
+              randomIndex = Math.floor(Math.random() * currentIndex);
+              currentIndex -= 1;
+
+              // And swap it with the current element.
+              temporaryValue = array[currentIndex];
+              array[currentIndex] = array[randomIndex];
+              array[randomIndex] = temporaryValue;
+            
+        }
+          return array;
+      }
+
+			axios.get('/list')
+				.then(function (response) {
+					// handle success
+          const files = shuffle(response.data.files.filter( f => f.indexOf('.png') !== -1 ));
+          let els = [];
+          files.forEach(f => {
+            let itemClass = 'grid-item';
+            if (f.indexOf('970') !== -1){
+              itemClass += ' grid-item--width2';
+            } 
+            if (f.indexOf('160') !== -1){
+              itemClass += ' grid-item--width3';
+            } 
+            let container = $('<div class="' + itemClass + '"></div>'); //Equivalent: $(document.createElement('img'));
+            let img = $('<img>');
+            img.attr('src', './assets/' + f);
+            img.appendTo(container);
+            container.appendTo('#container');
+            els.push(container);
+          });
+
+          setTimeout(function(){
+            $('.grid').masonry({
+              columnWidth: '.grid-sizer',
+              itemSelector: '.grid-item',
+              percentagePosition: true
+            });
+
+            console.log('masonry init');
+            // els = shuffle(els);
+            els.forEach( (el, i) => {
+              setTimeout(function(){
+                $(el).addClass('fadein')
+              }, 50 * i);
+            });
+          }, 3000)
+				});
+    </script>
+  </body>
+</html>
